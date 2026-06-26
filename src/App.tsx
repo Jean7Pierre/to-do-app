@@ -71,6 +71,11 @@ const App = (): React.JSX.Element => {
     setLengthTodos(newLengthTodos.length)
   }
 
+  const handleDelete = () => {
+    const pendingTodos = todos.filter((todo) => todo.completed === false)
+    setTodos(pendingTodos)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-md">
@@ -123,6 +128,14 @@ const App = (): React.JSX.Element => {
           <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
             Complete
           </button>
+          {todos.length > lengthTodos ? (
+            <button
+              onClick={handleDelete}
+              className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
+            >
+              Borrar Seleccionado
+            </button>
+          ) : null}
         </footer>
       </main>
     </div>
