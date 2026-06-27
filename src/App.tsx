@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type SubmitEvent } from 'react'
+import { useCallback, useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react'
 import './App.css'
 
 const mockTodos = [
@@ -28,8 +28,9 @@ interface ToDo {
 const App = (): React.JSX.Element => {
   const [todos, setTodos] = useState<ToDo[]>(mockTodos)
   const [lengthTodos, setLengthTodos] = useState<number>(todos.length)
+  const [history, setHistory] = useState<ToDo[][]>([mockTodos])
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const newTodoValue = formData.get('todo') as string | undefined
@@ -44,6 +45,12 @@ const App = (): React.JSX.Element => {
       return [newTodo, ...prevState]
     })
 
+    setHistory((prevState) => {
+      return [...prevState, todos]
+    })
+
+    setLengthTodos((prevState) => prevState + 1)
+
     //event.currentTarget.reset()
     const inputElement = event.currentTarget.elements.namedItem('todo') as
       | HTMLInputElement
@@ -53,7 +60,7 @@ const App = (): React.JSX.Element => {
     }
   }
 
-  const handleCompleted = ({
+  const handleCompletedTodo = ({
     event,
     todo
   }: {
@@ -69,20 +76,51 @@ const App = (): React.JSX.Element => {
     const newLengthTodos = newTodos.filter((todo) => todo.completed !== true)
     setTodos(newTodos)
     setLengthTodos(newLengthTodos.length)
+    setHistory((prevState) => {
+      return [...prevState, todos]
+    })
   }
 
-  const handleDelete = () => {
+  const handleDeleteTodo = () => {
     const pendingTodos = todos.filter((todo) => todo.completed === false)
     setTodos(pendingTodos)
+    setHistory((prevState) => {
+      return [...prevState, todos]
+    })
   }
 
+  const undo = useCallback(
+    (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+        if (history.length === 0) return
+
+        const lastSnapShot = history[history.length - 1]
+        const newHistory = history.slice(0, -1)
+
+        setTodos(lastSnapShot)
+        setHistory(newHistory)
+        setLengthTodos(lastSnapShot.filter((todo) => todo.completed !== true).length)
+      }
+    },
+    [history]
+  )
+
+  useEffect(() => {
+    window.addEventListener('keydown', undo)
+
+    return () => {
+      window.removeEventListener('keydown', undo)
+    }
+  }, [todos, undo])
+
+  console.log(history)
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-md">
         <h1 className="text-center text-4xl font-extrabold text-gray-900">To do TS</h1>
       </header>
       <main className="mt-8 w-full max-w-md">
-        <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
+        <form onSubmit={handleAddTodos} className="bg-white shadow-md rounded-lg p-6">
           <label htmlFor="todo" className="sr-only">
             ¿Qué quieres hacer?
           </label>
@@ -101,8 +139,9 @@ const App = (): React.JSX.Element => {
             return (
               <li key={todo.id} className={`py-2 ${isCompleted}`}>
                 <input
+                  checked={todo.completed}
                   onChange={(event) => {
-                    handleCompleted({ event, todo })
+                    handleCompletedTodo({ event, todo })
                   }}
                   type="checkbox"
                   className="appearance-none h-8 w-8 rounded-full border-2 border-slate-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all duration-200"
@@ -130,7 +169,7 @@ const App = (): React.JSX.Element => {
           </button>
           {todos.length > lengthTodos ? (
             <button
-              onClick={handleDelete}
+              onClick={handleDeleteTodo}
               className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
             >
               Borrar Seleccionado
