@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ChangeEvent, type SubmitEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type SubmitEvent } from 'react'
 import './App.css'
 
 const mockTodos = [
@@ -28,7 +28,7 @@ interface ToDo {
 const App = (): React.JSX.Element => {
   const [todos, setTodos] = useState<ToDo[]>(mockTodos)
   const [lengthTodos, setLengthTodos] = useState<number>(todos.length)
-  const [history, setHistory] = useState<ToDo[][]>([mockTodos])
+  const history = useRef<ToDo[][]>([mockTodos])
   const [search, setSearch] = useState<string>('')
   const [debounce, setDebounce] = useState<string>('')
 
@@ -47,9 +47,7 @@ const App = (): React.JSX.Element => {
       return [newTodo, ...prevState]
     })
 
-    setHistory((prevState) => {
-      return [...prevState, todos]
-    })
+    history.current = [...history.current, todos]
 
     setLengthTodos((prevState) => prevState + 1)
 
@@ -78,34 +76,27 @@ const App = (): React.JSX.Element => {
     const newLengthTodos = newTodos.filter((todo) => todo.completed !== true)
     setTodos(newTodos)
     setLengthTodos(newLengthTodos.length)
-    setHistory((prevState) => {
-      return [...prevState, todos]
-    })
+    history.current = [...history.current, todos]
   }
 
   const handleDeleteTodo = () => {
     const pendingTodos = todos.filter((todo) => todo.completed === false)
     setTodos(pendingTodos)
-    setHistory((prevState) => {
-      return [...prevState, todos]
-    })
+    history.current = [...history.current, todos]
   }
 
-  const undo = useCallback(
-    (event: KeyboardEvent) => {
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-        if (history.length === 0) return
+  const undo = useCallback((event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+      if (history.current.length <= 1) return
 
-        const lastSnapShot = history[history.length - 1]
-        const newHistory = history.slice(0, -1)
+      const newHistory = history.current.slice(0, -1)
+      const lastSnapShot = history.current[history.current.length - 1]
 
-        setTodos(lastSnapShot)
-        setHistory(newHistory)
-        setLengthTodos(lastSnapShot.filter((todo) => todo.completed !== true).length)
-      }
-    },
-    [history]
-  )
+      history.current = newHistory
+      setTodos(lastSnapShot)
+      setLengthTodos(lastSnapShot.filter((todo) => !todo.completed).length)
+    }
+  }, [])
 
   useEffect(() => {
     window.addEventListener('keydown', undo)
@@ -113,7 +104,7 @@ const App = (): React.JSX.Element => {
     return () => {
       window.removeEventListener('keydown', undo)
     }
-  }, [todos, undo])
+  }, [undo])
 
   useEffect(() => {
     const timer = setTimeout(() => {
