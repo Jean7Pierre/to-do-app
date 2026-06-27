@@ -29,6 +29,8 @@ const App = (): React.JSX.Element => {
   const [todos, setTodos] = useState<ToDo[]>(mockTodos)
   const [lengthTodos, setLengthTodos] = useState<number>(todos.length)
   const [history, setHistory] = useState<ToDo[][]>([mockTodos])
+  const [search, setSearch] = useState<string>('')
+  const [debounce, setDebounce] = useState<string>('')
 
   const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -113,13 +115,43 @@ const App = (): React.JSX.Element => {
     }
   }, [todos, undo])
 
-  console.log(history)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebounce(search)
+    }, 300)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [search])
+
+  const handleSearchTodos = (event: ChangeEvent<HTMLInputElement>) => {
+    const searchValue = event.currentTarget.value
+    if (searchValue === ' ') return
+    setSearch(searchValue)
+  }
+
+  const filteredTodos =
+    debounce === ''
+      ? todos
+      : todos.filter((todo) => todo.title.toLowerCase().includes(search.toLowerCase()))
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-md">
         <h1 className="text-center text-4xl font-extrabold text-gray-900">To do TS</h1>
       </header>
       <main className="mt-8 w-full max-w-md">
+        <form>
+          <label htmlFor="search">Buscar todos:</label>
+          <input
+            onChange={handleSearchTodos}
+            type="search"
+            placeholder="go to the mountains"
+            name="search"
+            value={search}
+          />
+        </form>
         <form onSubmit={handleAddTodos} className="bg-white shadow-md rounded-lg p-6">
           <label htmlFor="todo" className="sr-only">
             ¿Qué quieres hacer?
@@ -134,7 +166,7 @@ const App = (): React.JSX.Element => {
           />
         </form>
         <ul className="mt-4 divide-y divide-gray-200">
-          {todos.map((todo) => {
+          {filteredTodos.map((todo) => {
             const isCompleted = todo.completed ? 'line-through text-slate-400' : ''
             return (
               <li key={todo.id} className={`py-2 ${isCompleted}`}>
@@ -154,8 +186,8 @@ const App = (): React.JSX.Element => {
         <footer className="flex items-center justify-between gap-4 p-3 bg-slate-50 rounded-xl">
           <span>
             {lengthTodos === 1
-              ? `${lengthTodos} tarea pendiente`
-              : `${lengthTodos} tareas
+              ? `Mostrando ${filteredTodos.length} de ${lengthTodos} tarea pendiente`
+              : `Mostrando ${filteredTodos.length} de ${lengthTodos} tareas
             pendientes`}
           </span>
           <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">

@@ -5,9 +5,9 @@
 - [x] Añadir estilos basicos
 - [x] Listar todos los TODOs usando un mock
 - [x] Poder borrar un TODO usando mock
-- [ ] Al presionar Ctrl + Z permita recuperar los ultimos tres todos borrados.
-- [ ] Agregar una busqueda para buscar todos usando onChange
-- [ ] Agregar un debounce de 300 ms para evitar busquedas innecesarias
+- [x] Al presionar Ctrl + Z permita recuperar los ultimos tres todos borrados.
+- [x] Agregar una busqueda para buscar todos usando onChange
+- [x] Agregar un debounce de 300 ms para evitar busquedas innecesarias
 - [ ] Marcar TODO como completado
 - [ ] Añadir forma de filtrar TODOs (Footer)
 - [ ] Mostrar número de TODOs pendientes (Footer)
