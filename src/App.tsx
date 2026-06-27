@@ -127,6 +127,29 @@ const App = (): React.JSX.Element => {
       ? todos
       : todos.filter((todo) => todo.title.toLowerCase().includes(search.toLowerCase()))
 
+  const handleMarkedAllTodos = () => {
+    setTodos((prevState) => {
+      // 1. Verificamos si YA todas las tareas están completadas
+      const areAllCompleted = prevState.every((todo) => todo.completed)
+
+      // 2. Si todas están completadas, queremos desmarcarlas (false).
+      //    Si falta alguna por completar, queremos marcarlas todas (true).
+      const newStatus = !areAllCompleted
+
+      // 3. Retornamos el nuevo mapa inmutable
+      return prevState.map((todo) => {
+        // Si ya tiene el estado deseado, retornamos una copia superficial sin cambios
+        if (todo.completed === newStatus) return { ...todo }
+
+        // Si no, le aplicamos el nuevo estado
+        return {
+          ...todo,
+          completed: newStatus
+        }
+      })
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-md">
@@ -181,7 +204,11 @@ const App = (): React.JSX.Element => {
               : `Mostrando ${filteredTodos.length} de ${lengthTodos} tareas
             pendientes`}
           </span>
-          <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
+          <button
+            onClick={handleMarkedAllTodos}
+            type="button"
+            className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
+          >
             All
           </button>
           <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
