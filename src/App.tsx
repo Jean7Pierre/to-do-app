@@ -146,15 +146,12 @@ const App = (): React.JSX.Element => {
   }
 
   const filteredTodos = useMemo(() => {
-    if (debounce === '') {
-      const newTodos = [...todos]
-      return dictTodosAction[filterTodo](newTodos)
-    } else {
-      const todosFiltrado = todos.filter((todo) =>
-        todo.title.toLowerCase().includes(debounce.toLowerCase())
-      )
-      return dictTodosAction[filterTodo](todosFiltrado)
-    }
+    const todosToFilter =
+      debounce === ''
+        ? todos
+        : todos.filter((todo) => todo.title.toLowerCase().includes(debounce.toLowerCase()))
+
+    return dictTodosAction[filterTodo](todosToFilter)
   }, [filterTodo, debounce, todos])
 
   //aca esta fallando hay que pasarle los todos por parametro para que actue con los valores filtrados
