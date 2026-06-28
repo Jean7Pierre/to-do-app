@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type SubmitEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type SubmitEvent
+} from 'react'
 import './App.css'
 
 const mockTodos = [
@@ -25,12 +33,21 @@ interface ToDo {
   completed: boolean
 }
 
+const FilterTodos = {
+  COMPLETED: 'COMPLETED',
+  ACTIVE: 'ACTIVE',
+  NONE: 'NONE'
+} as const
+
+type filterTodosTS = keyof typeof FilterTodos
+
 const App = (): React.JSX.Element => {
   const [todos, setTodos] = useState<ToDo[]>(mockTodos)
   const [lengthTodos, setLengthTodos] = useState<number>(todos.length)
   const history = useRef<ToDo[][]>([mockTodos])
   const [search, setSearch] = useState<string>('')
-  const [debounce, setDebounce] = useState<string>('')
+  const [debounce, setDebounce] = useState<string>(search)
+  const [filterTodo, setFilterTodo] = useState<filterTodosTS>(FilterTodos.NONE)
 
   const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -122,12 +139,28 @@ const App = (): React.JSX.Element => {
     setSearch(searchValue)
   }
 
-  const filteredTodos =
-    debounce === ''
-      ? todos
-      : todos.filter((todo) => todo.title.toLowerCase().includes(search.toLowerCase()))
+  const dictTodosAction: Record<filterTodosTS, (todos: ToDo[]) => ToDo[]> = {
+    [FilterTodos.NONE]: (todos) => todos,
+    [FilterTodos.ACTIVE]: (todos) => todos.filter((todo) => todo.completed === false),
+    [FilterTodos.COMPLETED]: (todos) => todos.filter((todo) => todo.completed === true)
+  }
 
+  const filteredTodos = useMemo(() => {
+    if (debounce === '') {
+      const newTodos = [...todos]
+      return dictTodosAction[filterTodo](newTodos)
+    } else {
+      const todosFiltrado = todos.filter((todo) =>
+        todo.title.toLowerCase().includes(debounce.toLowerCase())
+      )
+      return dictTodosAction[filterTodo](todosFiltrado)
+    }
+  }, [filterTodo, debounce, todos])
+
+  //aca esta fallando hay que pasarle los todos por parametro para que actue con los valores filtrados
   const handleMarkedAllTodos = () => {
+    //desactivamos filtrado inicial en caso de que el usuario hiciera click anteriormente
+    setFilterTodo(FilterTodos.NONE)
     setTodos((prevState) => {
       // 1. Verificamos si YA todas las tareas están completadas
       const areAllCompleted = prevState.every((todo) => todo.completed)
@@ -150,13 +183,23 @@ const App = (): React.JSX.Element => {
     })
   }
 
+  const handleActiveTodos = () => {
+    const newState = filterTodo === FilterTodos.ACTIVE ? FilterTodos.NONE : FilterTodos.ACTIVE
+    setFilterTodo(newState)
+  }
+
+  const handleCompleteTodos = () => {
+    const newState = filterTodo === FilterTodos.COMPLETED ? FilterTodos.NONE : FilterTodos.COMPLETED
+    setFilterTodo(newState)
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-md">
         <h1 className="text-center text-4xl font-extrabold text-gray-900">To do TS</h1>
       </header>
       <main className="mt-8 w-full max-w-md">
-        <form>
+        <form onSubmit={(event) => event.preventDefault()}>
           <label htmlFor="search">Buscar todos:</label>
           <input
             onChange={handleSearchTodos}
@@ -211,10 +254,18 @@ const App = (): React.JSX.Element => {
           >
             All
           </button>
-          <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
+          <button
+            onClick={handleActiveTodos}
+            type="button"
+            className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
+          >
             Active
           </button>
-          <button className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">
+          <button
+            onClick={handleCompleteTodos}
+            type="button"
+            className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
+          >
             Complete
           </button>
           {todos.length > lengthTodos ? (
