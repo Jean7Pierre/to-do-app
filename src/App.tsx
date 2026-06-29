@@ -98,8 +98,9 @@ const App = (): React.JSX.Element => {
 
   const handleDeleteTodo = () => {
     const pendingTodos = todos.filter((todo) => todo.completed === false)
-    setTodos(pendingTodos)
     history.current = [...history.current, todos]
+    setTodos(pendingTodos)
+    setLengthTodos(pendingTodos.length)
   }
 
   const undo = useCallback((event: KeyboardEvent) => {
@@ -154,30 +155,25 @@ const App = (): React.JSX.Element => {
     return dictTodosAction[filterTodo](todosToFilter)
   }, [filterTodo, debounce, todos])
 
-  //aca esta fallando hay que pasarle los todos por parametro para que actue con los valores filtrados
-  const handleMarkedAllTodos = () => {
+  const handleMarkedToggleAllTodos = () => {
     //desactivamos filtrado inicial en caso de que el usuario hiciera click anteriormente
     setFilterTodo(FilterTodos.NONE)
-    setTodos((prevState) => {
-      // 1. Verificamos si YA todas las tareas están completadas
-      const areAllCompleted = prevState.every((todo) => todo.completed)
+    // 1. Verificamos si YA todas las tareas están completadas
+    const areAllCompleted = todos.every((todo) => todo.completed)
+    // 2. Si todas están completadas, queremos desmarcarlas (false).
+    //    Si falta alguna por completar, queremos marcarlas todas (true).
+    const newStatus = !areAllCompleted
 
-      // 2. Si todas están completadas, queremos desmarcarlas (false).
-      //    Si falta alguna por completar, queremos marcarlas todas (true).
-      const newStatus = !areAllCompleted
-
-      // 3. Retornamos el nuevo mapa inmutable
-      return prevState.map((todo) => {
-        // Si ya tiene el estado deseado, retornamos una copia superficial sin cambios
-        if (todo.completed === newStatus) return { ...todo }
-
-        // Si no, le aplicamos el nuevo estado
-        return {
-          ...todo,
-          completed: newStatus
-        }
-      })
+    const newTodos = todos.map((todo) => {
+      return {
+        ...todo,
+        completed: newStatus
+      }
     })
+
+    history.current = [...history.current, todos]
+    setTodos(newTodos)
+    setLengthTodos(newStatus ? 0 : newTodos.length)
   }
 
   const handleActiveTodos = () => {
@@ -245,7 +241,7 @@ const App = (): React.JSX.Element => {
             pendientes`}
           </span>
           <button
-            onClick={handleMarkedAllTodos}
+            onClick={handleMarkedToggleAllTodos}
             type="button"
             className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
           >
