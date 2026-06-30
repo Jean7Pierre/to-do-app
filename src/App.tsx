@@ -1,8 +1,8 @@
 import {
   useCallback,
   useEffect,
+  useReducer,
   useMemo,
-  useRef,
   useState,
   type ChangeEvent,
   type SubmitEvent
@@ -41,10 +41,89 @@ const FilterTodos = {
 
 type filterTodosTS = keyof typeof FilterTodos
 
+interface AppState {
+  todos: ToDo[]
+  history: ToDo[][]
+}
+
+type Action =
+  | { type: 'ADD_TODO'; payload: { title: string } }
+  | { type: 'TOGGLE_COMPLETE'; payload: { id: string; completed: boolean } }
+  | { type: 'DELETE_COMPLETED' }
+  | { type: 'TOGGLE_ALL'; payload: { completed: boolean } }
+  | { type: 'UNDO' }
+
+const initialState: AppState = {
+  todos: mockTodos,
+  history: [mockTodos]
+}
+
+const reducer = (state: AppState, action: Action): AppState => {
+  switch (action.type) {
+    case 'ADD_TODO': {
+      const newTodo: ToDo = {
+        id: crypto.randomUUID(),
+        title: action.payload.title,
+        completed: false
+      }
+      const newTodos = [newTodo, ...state.todos]
+      return {
+        ...state,
+        history: [...state.history, newTodos],
+        todos: newTodos
+      }
+    }
+    case 'TOGGLE_COMPLETE': {
+      const newTodos = state.todos.map((todo) => {
+        if (todo.id === action.payload.id) {
+          return { ...todo, completed: action.payload.completed }
+        }
+        return todo
+      })
+      return {
+        ...state,
+        history: [...state.history, newTodos],
+        todos: newTodos
+      }
+    }
+    case 'DELETE_COMPLETED': {
+      const newTodos = state.todos.filter((todo) => !todo.completed)
+      return {
+        ...state,
+        history: [...state.history, newTodos],
+        todos: newTodos
+      }
+    }
+    case 'TOGGLE_ALL': {
+      const newTodos = state.todos.map((todo) => ({
+        ...todo,
+        completed: action.payload.completed
+      }))
+      return {
+        ...state,
+        history: [...state.history, newTodos],
+        todos: newTodos
+      }
+    }
+    case 'UNDO': {
+      if (state.history.length <= 1) {
+        return state
+      }
+      const newHistory = state.history.slice(0, -1)
+      const lastTodos = newHistory[newHistory.length - 1]
+      return {
+        ...state,
+        history: newHistory,
+        todos: lastTodos
+      }
+    }
+    default:
+      return state
+  }
+}
+
 const App = (): React.JSX.Element => {
-  const [todos, setTodos] = useState<ToDo[]>(mockTodos)
-  const [lengthTodos, setLengthTodos] = useState<number>(todos.length)
-  const history = useRef<ToDo[][]>([mockTodos])
+  const [state, dispatch] = useReducer(reducer, initialState)
   const [search, setSearch] = useState<string>('')
   const [debounce, setDebounce] = useState<string>(search)
   const [filterTodo, setFilterTodo] = useState<filterTodosTS>(FilterTodos.NONE)
@@ -55,18 +134,7 @@ const App = (): React.JSX.Element => {
     const newTodoValue = formData.get('todo') as string | undefined
     if (!newTodoValue) return
 
-    const newTodo: ToDo = {
-      id: crypto.randomUUID(),
-      title: newTodoValue,
-      completed: false
-    }
-    setTodos((prevState) => {
-      return [newTodo, ...prevState]
-    })
-
-    history.current = [...history.current, todos]
-
-    setLengthTodos((prevState) => prevState + 1)
+    dispatch({ type: 'ADD_TODO', payload: { title: newTodoValue } })
 
     //event.currentTarget.reset()
     const inputElement = event.currentTarget.elements.namedItem('todo') as
@@ -84,37 +152,21 @@ const App = (): React.JSX.Element => {
     event: ChangeEvent<HTMLInputElement>
     todo: ToDo
   }) => {
-    const newTodos = todos.map((item) => {
-      if (item.id === todo.id) {
-        return { ...item, completed: event.target.checked }
-      }
-      return item
+    dispatch({
+      type: 'TOGGLE_COMPLETE',
+      payload: { id: todo.id, completed: event.target.checked }
     })
-    const newLengthTodos = newTodos.filter((todo) => todo.completed !== true)
-    setTodos(newTodos)
-    setLengthTodos(newLengthTodos.length)
-    history.current = [...history.current, todos]
   }
 
   const handleDeleteTodo = () => {
-    const pendingTodos = todos.filter((todo) => todo.completed === false)
-    history.current = [...history.current, todos]
-    setTodos(pendingTodos)
-    setLengthTodos(pendingTodos.length)
+    dispatch({ type: 'DELETE_COMPLETED' })
   }
 
   const undo = useCallback((event: KeyboardEvent) => {
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-      if (history.current.length <= 1) return
-
-      const newHistory = history.current.slice(0, -1)
-      const lastSnapShot = history.current[history.current.length - 1]
-
-      history.current = newHistory
-      setTodos(lastSnapShot)
-      setLengthTodos(lastSnapShot.filter((todo) => !todo.completed).length)
+      dispatch({ type: 'UNDO' })
     }
-  }, [])
+  }, []) // dispatch is stable and doesn't need to be in the dependency array
 
   useEffect(() => {
     window.addEventListener('keydown', undo)
@@ -122,7 +174,7 @@ const App = (): React.JSX.Element => {
     return () => {
       window.removeEventListener('keydown', undo)
     }
-  }, [undo])
+  }, [undo]) // undo is stable due to useCallback
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -149,31 +201,19 @@ const App = (): React.JSX.Element => {
   const filteredTodos = useMemo(() => {
     const todosToFilter =
       debounce === ''
-        ? todos
-        : todos.filter((todo) => todo.title.toLowerCase().includes(debounce.toLowerCase()))
+        ? state.todos
+        : state.todos.filter((todo) => todo.title.toLowerCase().includes(debounce.toLowerCase()))
 
     return dictTodosAction[filterTodo](todosToFilter)
-  }, [filterTodo, debounce, todos])
+  }, [filterTodo, debounce, state.todos])
 
-  const handleMarkedToggleAllTodos = () => {
+  const handleMarkedAllTodos = () => {
     //desactivamos filtrado inicial en caso de que el usuario hiciera click anteriormente
     setFilterTodo(FilterTodos.NONE)
-    // 1. Verificamos si YA todas las tareas están completadas
-    const areAllCompleted = todos.every((todo) => todo.completed)
-    // 2. Si todas están completadas, queremos desmarcarlas (false).
-    //    Si falta alguna por completar, queremos marcarlas todas (true).
+    const areAllCompleted = state.todos.every((todo) => todo.completed)
     const newStatus = !areAllCompleted
 
-    const newTodos = todos.map((todo) => {
-      return {
-        ...todo,
-        completed: newStatus
-      }
-    })
-
-    history.current = [...history.current, todos]
-    setTodos(newTodos)
-    setLengthTodos(newStatus ? 0 : newTodos.length)
+    dispatch({ type: 'TOGGLE_ALL', payload: { completed: newStatus } })
   }
 
   const handleActiveTodos = () => {
@@ -186,13 +226,15 @@ const App = (): React.JSX.Element => {
     setFilterTodo(newState)
   }
 
+  const pendingTodosCount = state.todos.filter((todo) => !todo.completed).length
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-md">
         <h1 className="text-center text-4xl font-extrabold text-gray-900">To do TS</h1>
       </header>
       <main className="mt-8 w-full max-w-md">
-        <form onSubmit={(event) => event.preventDefault()}>
+        <form onSubmit={(event) => event.preventDefault()} className="mb-4">
           <label htmlFor="search">Buscar todos:</label>
           <input
             onChange={handleSearchTodos}
@@ -235,13 +277,13 @@ const App = (): React.JSX.Element => {
         </ul>
         <footer className="flex items-center justify-between gap-4 p-3 bg-slate-50 rounded-xl">
           <span>
-            {lengthTodos === 1
-              ? `Mostrando ${filteredTodos.length} de ${lengthTodos} tarea pendiente`
-              : `Mostrando ${filteredTodos.length} de ${lengthTodos} tareas
+            {pendingTodosCount === 1
+              ? `Mostrando ${filteredTodos.length} de ${pendingTodosCount} tarea pendiente`
+              : `Mostrando ${filteredTodos.length} de ${pendingTodosCount} tareas
             pendientes`}
           </span>
           <button
-            onClick={handleMarkedToggleAllTodos}
+            onClick={handleMarkedAllTodos}
             type="button"
             className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
           >
@@ -261,7 +303,7 @@ const App = (): React.JSX.Element => {
           >
             Complete
           </button>
-          {todos.length > lengthTodos ? (
+          {state.todos.length > pendingTodosCount ? (
             <button
               onClick={handleDeleteTodo}
               className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
