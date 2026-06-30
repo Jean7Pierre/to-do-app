@@ -243,30 +243,32 @@ const App = (): React.JSX.Element => {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl">
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {filteredTodos.map((todo) => (
-              <li key={todo.id} className="flex items-center p-4 group">
-                <input
-                  checked={todo.completed}
-                  onChange={(event) => {
-                    handleCompletedTodo({ event, todo })
-                  }}
-                  type="checkbox"
-                  className="h-6 w-6 rounded-full text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:bg-gray-700 dark:checked:bg-indigo-500 transition duration-150 ease-in-out cursor-pointer"
-                />
-                <span
-                  className={`ml-4 flex-1 text-lg ${
-                    todo.completed
-                      ? 'line-through text-gray-400 dark:text-gray-500'
-                      : 'text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  {todo.title}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl h-96 overflow-y-auto">
+          {filteredTodos.length > 0 ? (
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+              {filteredTodos.map((todo) => (
+                <li key={todo.id} className="flex items-center p-4 group">
+                  <input
+                    checked={todo.completed}
+                    onChange={(event) => {
+                      handleCompletedTodo({ event, todo })
+                    }}
+                    type="checkbox"
+                    className="h-6 w-6 rounded-full text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:bg-gray-700 dark:checked:bg-indigo-500 transition duration-150 ease-in-out cursor-pointer"
+                  />
+                  <span
+                    className={`ml-4 flex-1 text-lg ${todo.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}
+                  >
+                    {todo.title}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-gray-500 dark:text-gray-400">No hay tareas por aquí.</p>
+            </div>
+          )}
         </div>
 
         <footer className="flex items-center justify-between gap-4 p-4 bg-white dark:bg-gray-800 shadow-lg rounded-xl">
