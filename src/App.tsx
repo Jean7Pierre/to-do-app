@@ -8,6 +8,7 @@ import {
   type SubmitEvent
 } from 'react'
 import './App.css'
+import useDebounce from './hooks/useDebounce'
 
 const mockTodos = [
   {
@@ -125,7 +126,7 @@ const reducer = (state: AppState, action: Action): AppState => {
 const App = (): React.JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [search, setSearch] = useState<string>('')
-  const [debounce, setDebounce] = useState<string>(search)
+  const debounce = useDebounce(search, 300)
   const [filterTodo, setFilterTodo] = useState<filterTodosTS>(FilterTodos.NONE)
 
   const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
@@ -175,16 +176,6 @@ const App = (): React.JSX.Element => {
       window.removeEventListener('keydown', undo)
     }
   }, [undo]) // undo is stable due to useCallback
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebounce(search)
-    }, 300)
-
-    return () => {
-      clearTimeout(timer)
-    }
-  }, [search])
 
   const handleSearchTodos = (event: ChangeEvent<HTMLInputElement>) => {
     const searchValue = event.currentTarget.value
