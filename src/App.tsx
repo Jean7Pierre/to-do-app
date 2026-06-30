@@ -198,6 +198,7 @@ const App = (): React.JSX.Element => {
     return dictTodosAction[filterTodo](todosToFilter)
   }, [filterTodo, debounce, state.todos])
 
+  /*
   const handleMarkedAllTodos = () => {
     //desactivamos filtrado inicial en caso de que el usuario hiciera click anteriormente
     setFilterTodo(FilterTodos.NONE)
@@ -206,100 +207,121 @@ const App = (): React.JSX.Element => {
 
     dispatch({ type: 'TOGGLE_ALL', payload: { completed: newStatus } })
   }
-
-  const handleActiveTodos = () => {
-    const newState = filterTodo === FilterTodos.ACTIVE ? FilterTodos.NONE : FilterTodos.ACTIVE
-    setFilterTodo(newState)
-  }
-
-  const handleCompleteTodos = () => {
-    const newState = filterTodo === FilterTodos.COMPLETED ? FilterTodos.NONE : FilterTodos.COMPLETED
-    setFilterTodo(newState)
-  }
-
+*/
   const pendingTodosCount = state.todos.filter((todo) => !todo.completed).length
+  const completedTodosCount = state.todos.length - pendingTodosCount
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <header className="w-full max-w-md">
-        <h1 className="text-center text-4xl font-extrabold text-gray-900">To do TS</h1>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+      <header className="w-full max-w-xl mb-8">
+        <h1 className="text-center text-5xl font-bold text-indigo-600 dark:text-indigo-400 tracking-tight">
+          To-do TS
+        </h1>
       </header>
-      <main className="mt-8 w-full max-w-md">
-        <form onSubmit={(event) => event.preventDefault()} className="mb-4">
-          <label htmlFor="search">Buscar todos:</label>
-          <input
-            onChange={handleSearchTodos}
-            type="search"
-            placeholder="go to the mountains"
-            name="search"
-            value={search}
-          />
-        </form>
-        <form onSubmit={handleAddTodos} className="bg-white shadow-md rounded-lg p-6">
-          <label htmlFor="todo" className="sr-only">
-            ¿Qué quieres hacer?
-          </label>
-          <input
-            type="text"
-            placeholder="¿Qué quieres hacer?"
-            id="todo"
-            name="todo"
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </form>
-        <ul className="mt-4 divide-y divide-gray-200">
-          {filteredTodos.map((todo) => {
-            const isCompleted = todo.completed ? 'line-through text-slate-400' : ''
-            return (
-              <li key={todo.id} className={`py-2 ${isCompleted}`}>
+      <main className="w-full max-w-xl space-y-6">
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-4">
+          <form onSubmit={handleAddTodos}>
+            <input
+              type="text"
+              placeholder="¿Qué quieres hacer hoy?"
+              id="todo"
+              name="todo"
+              required
+              autoFocus
+              className="w-full px-4 py-3 bg-transparent border-none rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            />
+          </form>
+          <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+            <input
+              onChange={handleSearchTodos}
+              type="search"
+              placeholder="Buscar tareas..."
+              name="search"
+              value={search}
+              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl">
+          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
+            {filteredTodos.map((todo) => (
+              <li key={todo.id} className="flex items-center p-4 group">
                 <input
                   checked={todo.completed}
                   onChange={(event) => {
                     handleCompletedTodo({ event, todo })
                   }}
                   type="checkbox"
-                  className="appearance-none h-8 w-8 rounded-full border-2 border-slate-300 bg-white checked:bg-indigo-600 checked:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all duration-200"
+                  className="h-6 w-6 rounded-full text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:bg-gray-700 dark:checked:bg-indigo-500 transition duration-150 ease-in-out cursor-pointer"
                 />
-                {todo.title}
+                <span
+                  className={`ml-4 flex-1 text-lg ${
+                    todo.completed
+                      ? 'line-through text-gray-400 dark:text-gray-500'
+                      : 'text-gray-800 dark:text-gray-200'
+                  }`}
+                >
+                  {todo.title}
+                </span>
               </li>
-            )
-          })}
-        </ul>
-        <footer className="flex items-center justify-between gap-4 p-3 bg-slate-50 rounded-xl">
-          <span>
-            {pendingTodosCount === 1
-              ? `Mostrando ${filteredTodos.length} de ${pendingTodosCount} tarea pendiente`
-              : `Mostrando ${filteredTodos.length} de ${pendingTodosCount} tareas
-            pendientes`}
+            ))}
+          </ul>
+        </div>
+
+        <footer className="flex items-center justify-between gap-4 p-4 bg-white dark:bg-gray-800 shadow-lg rounded-xl">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {pendingTodosCount} {pendingTodosCount === 1 ? 'tarea pendiente' : 'tareas pendientes'}
           </span>
-          <button
-            onClick={handleMarkedAllTodos}
-            type="button"
-            className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
-          >
-            All
-          </button>
-          <button
-            onClick={handleActiveTodos}
-            type="button"
-            className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
-          >
-            Active
-          </button>
-          <button
-            onClick={handleCompleteTodos}
-            type="button"
-            className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
-          >
-            Complete
-          </button>
-          {state.todos.length > pendingTodosCount ? (
+
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setFilterTodo(FilterTodos.NONE)
+              }}
+              type="button"
+              className={`px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${
+                filterTodo === FilterTodos.NONE
+                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Todas
+            </button>
+            <button
+              onClick={() => {
+                setFilterTodo(FilterTodos.ACTIVE)
+              }}
+              type="button"
+              className={`px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${
+                filterTodo === FilterTodos.ACTIVE
+                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Activas
+            </button>
+            <button
+              onClick={() => {
+                setFilterTodo(FilterTodos.COMPLETED)
+              }}
+              type="button"
+              className={`px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${
+                filterTodo === FilterTodos.COMPLETED
+                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              Completadas
+            </button>
+          </div>
+
+          {completedTodosCount > 0 ? (
             <button
               onClick={handleDeleteTodo}
-              className="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700"
+              className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
             >
-              Borrar Seleccionado
+              Borrar completadas
             </button>
           ) : null}
         </footer>
