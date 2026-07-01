@@ -8,13 +8,13 @@
 - [x] Al presionar Ctrl + Z permita recuperar los ultimos tres todos borrados.
 - [x] Agregar una busqueda para buscar todos usando onChange
 - [x] Agregar un debounce de 300 ms para evitar busquedas innecesarias
-- [ ] Marcar TODO como completado
-- [ ] Añadir forma de filtrar TODOs (Footer)
-- [ ] Mostrar número de TODOs pendientes (Footer)
-- [ ] Añadir forma de borrar todos los TODOs completados
-- [ ] Crear Header con input (Header)
-- [ ] Crear un TODO (Header)
-- [ ] Poder editar el texto de un TODO (Doble click)
+- [x] Marcar TODO como completado
+- [x] Añadir forma de filtrar TODOs (Footer)
+- [x] Mostrar número de TODOs pendientes (Footer)
+- [x] Añadir forma de borrar todos los TODOs completados
+- [x] Crear Header con input (Header)
+- [x] Crear un TODO (Header)
+- [x] Poder editar el texto de un TODO (Doble click)
 - [ ] Añadir animaciones con AutoAnimate
-- [ ] Pasar a Reducer
+- [x] Pasar a Reducer
 - [ ] Sincronizar con el backend, dejar de usar un mock

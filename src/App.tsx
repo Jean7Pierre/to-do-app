@@ -55,6 +55,7 @@ type Action =
   | { type: 'TOGGLE_ALL'; payload: { completed: boolean } }
   | { type: 'UNDO' }
   | { type: 'TOGGLE_MARKED_ALL'; payload: { completed: boolean } }
+  | { type: 'EDIT_TODO_TEXT'; payload: { id: string; title: string } }
 
 const initialState: AppState = {
   todos: mockTodos,
@@ -129,6 +130,19 @@ const reducer = (state: AppState, action: Action): AppState => {
         ...state,
         history: [...state.history, updatedTodos],
         todos: updatedTodos
+      }
+    }
+    case 'EDIT_TODO_TEXT': {
+      const editTodos = state.todos.map((todo) => {
+        if (todo.id === action.payload.id) {
+          return { ...todo, title: action.payload.title }
+        }
+        return todo
+      })
+      return {
+        ...state,
+        history: [...state.history, editTodos],
+        todos: editTodos
       }
     }
     default:
@@ -232,6 +246,11 @@ const App = (): React.JSX.Element => {
     }
   }, [isIndeterminate])
 
+  const handleEditTextTodo = (event: ChangeEvent<HTMLInputElement>, todo: ToDo) => {
+    const value = event.currentTarget.value
+    dispatch({ type: 'EDIT_TODO_TEXT', payload: { title: value, id: todo.id } })
+  }
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
       <header className="w-full max-w-xl mb-8">
@@ -290,7 +309,14 @@ const App = (): React.JSX.Element => {
                   <span
                     className={`ml-4 flex-1 text-lg ${todo.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}
                   >
-                    {todo.title}
+                    <input
+                      onChange={(event) => handleEditTextTodo(event, todo)}
+                      type="text"
+                      contentEditable
+                      value={todo.title}
+                      // Estilo dinámico: define el ancho según el texto (mínimo 12 caracteres de ancho)
+                      style={{ minWidth: `${Math.max(todo.title.length)}ch` }}
+                    />
                   </span>
                 </li>
               ))}
