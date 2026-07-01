@@ -5,7 +5,8 @@ import {
   useMemo,
   useState,
   type ChangeEvent,
-  type SubmitEvent
+  type SubmitEvent,
+  useRef
 } from 'react'
 import './App.css'
 import useDebounce from './hooks/useDebounce'
@@ -53,6 +54,7 @@ type Action =
   | { type: 'DELETE_COMPLETED' }
   | { type: 'TOGGLE_ALL'; payload: { completed: boolean } }
   | { type: 'UNDO' }
+  | { type: 'TOGGLE_MARKED_ALL'; payload: { completed: boolean } }
 
 const initialState: AppState = {
   todos: mockTodos,
@@ -118,6 +120,17 @@ const reducer = (state: AppState, action: Action): AppState => {
         todos: lastTodos
       }
     }
+    case 'TOGGLE_MARKED_ALL': {
+      const updatedTodos = state.todos.map((todo) => ({
+        ...todo,
+        completed: action.payload.completed
+      }))
+      return {
+        ...state,
+        history: [...state.history, updatedTodos],
+        todos: updatedTodos
+      }
+    }
     default:
       return state
   }
@@ -128,6 +141,7 @@ const App = (): React.JSX.Element => {
   const [search, setSearch] = useState<string>('')
   const debounce = useDebounce(search, 300)
   const [filterTodo, setFilterTodo] = useState<filterTodosTS>(FilterTodos.NONE)
+  const masterCheckboxRef = useRef<HTMLInputElement>(null)
 
   const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -198,18 +212,25 @@ const App = (): React.JSX.Element => {
     return dictTodosAction[filterTodo](todosToFilter)
   }, [filterTodo, debounce, state.todos])
 
-  /*
-  const handleMarkedAllTodos = () => {
-    //desactivamos filtrado inicial en caso de que el usuario hiciera click anteriormente
-    setFilterTodo(FilterTodos.NONE)
-    const areAllCompleted = state.todos.every((todo) => todo.completed)
-    const newStatus = !areAllCompleted
-
-    dispatch({ type: 'TOGGLE_ALL', payload: { completed: newStatus } })
+  const handleMasterChange = () => {
+    // Si todos están marcados, desmarca todos. Si no, marca todos.
+    const shouldCheckAll = !isAllChecked
+    dispatch({ type: 'TOGGLE_MARKED_ALL', payload: { completed: shouldCheckAll } })
   }
-*/
+
+  const totalItems = state.todos.length
   const pendingTodosCount = state.todos.filter((todo) => !todo.completed).length
-  const completedTodosCount = state.todos.length - pendingTodosCount
+  const completedTodosCount = totalItems - pendingTodosCount
+  const checkedItems = state.todos.filter((item) => item.completed).length
+  const isAllChecked = totalItems > 0 && checkedItems === totalItems
+  const isIndeterminate = checkedItems > 0 && checkedItems < totalItems
+
+  // 4. Efecto para aplicar la propiedad indeterminada directamente al DOM
+  useEffect(() => {
+    if (masterCheckboxRef.current) {
+      masterCheckboxRef.current.indeterminate = isIndeterminate
+    }
+  }, [isIndeterminate])
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
@@ -242,7 +263,17 @@ const App = (): React.JSX.Element => {
             />
           </div>
         </div>
-
+        <div>
+          <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>
+            <input
+              type="checkbox"
+              ref={masterCheckboxRef}
+              checked={isAllChecked}
+              onChange={handleMasterChange}
+            />
+            {isAllChecked ? ' Desmarcar todos' : ' Marcar todos'}
+          </label>
+        </div>
         <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl h-96 overflow-y-auto">
           {filteredTodos.length > 0 ? (
             <ul className="divide-y divide-gray-200 dark:divide-gray-700">
