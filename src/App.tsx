@@ -1,5 +1,6 @@
 import AddNewTodo from './components/AddNewTodo'
 import Footer from './components/Footer'
+import QueryTodo from './components/QueryTodo'
 import Todos from './components/Todos'
 import { Filter_Todos } from './const/FilterTodos'
 import useTodos from './hooks/useTodos'
@@ -32,16 +33,7 @@ const App = (): React.JSX.Element => {
       <main className="w-full max-w-xl space-y-6">
         <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-4">
           <AddNewTodo handleAddTodo={handleAddTodo} />
-          <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-            <input
-              onChange={handleSearchTodos}
-              type="search"
-              placeholder="Buscar tareas..."
-              name="search"
-              value={search}
-              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+          <QueryTodo handleSearchTodos={handleSearchTodos} search={search} />
         </div>
         <div>
           <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>
