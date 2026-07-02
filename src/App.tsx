@@ -12,6 +12,8 @@ import './App.css'
 import useDebounce from './hooks/useDebounce'
 import Todos from './components/Todos'
 import { type ToDo, type AppState, type Action, type TodoId } from '../types'
+import Footer from './components/Footer'
+import { Filter_Todos } from './const/FilterTodos'
 
 const mockTodos = [
   {
@@ -119,24 +121,18 @@ const reducer = (state: AppState, action: Action): AppState => {
   }
 }
 
-const FilterTodos = {
-  COMPLETED: 'COMPLETED',
-  ACTIVE: 'ACTIVE',
-  NONE: 'NONE'
-} as const
-
-type filterTodosTS = keyof typeof FilterTodos
-
 const initialState: AppState = {
   todos: mockTodos,
   history: [mockTodos]
 }
 
+type filterTodosTS = (typeof Filter_Todos)[keyof typeof Filter_Todos]
+
 const App = (): React.JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [search, setSearch] = useState<string>('')
   const debounce = useDebounce(search, 300)
-  const [filterTodo, setFilterTodo] = useState<filterTodosTS>(FilterTodos.NONE)
+  const [filterTodo, setFilterTodo] = useState<filterTodosTS>(Filter_Todos.NONE)
   const masterCheckboxRef = useRef<HTMLInputElement>(null)
 
   const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
@@ -186,9 +182,9 @@ const App = (): React.JSX.Element => {
   }
 
   const dictTodosAction: Record<filterTodosTS, (todos: ToDo[]) => ToDo[]> = {
-    [FilterTodos.NONE]: (todos) => todos,
-    [FilterTodos.ACTIVE]: (todos) => todos.filter((todo) => todo.completed === false),
-    [FilterTodos.COMPLETED]: (todos) => todos.filter((todo) => todo.completed === true)
+    [Filter_Todos.NONE]: (todos) => todos,
+    [Filter_Todos.ACTIVE]: (todos) => todos.filter((todo) => todo.completed === false),
+    [Filter_Todos.COMPLETED]: (todos) => todos.filter((todo) => todo.completed === true)
   }
 
   const filteredTodos = useMemo(() => {
@@ -273,62 +269,14 @@ const App = (): React.JSX.Element => {
           handleEditTextTodo={handleEditTextTodo}
         />
 
-        <footer className="flex items-center justify-between gap-4 p-4 bg-white dark:bg-gray-800 shadow-lg rounded-xl">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {pendingTodosCount} {pendingTodosCount === 1 ? 'tarea pendiente' : 'tareas pendientes'}
-          </span>
-
-          <div className="flex gap-2">
-            <button
-              onClick={() => {
-                setFilterTodo(FilterTodos.NONE)
-              }}
-              type="button"
-              className={`px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${
-                filterTodo === FilterTodos.NONE
-                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Todas
-            </button>
-            <button
-              onClick={() => {
-                setFilterTodo(FilterTodos.ACTIVE)
-              }}
-              type="button"
-              className={`px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${
-                filterTodo === FilterTodos.ACTIVE
-                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Activas
-            </button>
-            <button
-              onClick={() => {
-                setFilterTodo(FilterTodos.COMPLETED)
-              }}
-              type="button"
-              className={`px-3 py-1 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${
-                filterTodo === FilterTodos.COMPLETED
-                  ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
-                  : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-              }`}
-            >
-              Completadas
-            </button>
-          </div>
-
-          {completedTodosCount > 0 ? (
-            <button
-              onClick={handleDeleteCompleted}
-              className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
-            >
-              Borrar completadas
-            </button>
-          ) : null}
-        </footer>
+        <Footer
+          pendingTodosCount={pendingTodosCount}
+          filterTodo={filterTodo}
+          setFilterTodo={setFilterTodo}
+          FilterTodos={Filter_Todos}
+          completedTodosCount={completedTodosCount}
+          handleDeleteCompleted={handleDeleteCompleted}
+        />
       </main>
     </div>
   )
