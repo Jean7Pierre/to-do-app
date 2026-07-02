@@ -10,7 +10,8 @@ import {
 } from 'react'
 import './App.css'
 import useDebounce from './hooks/useDebounce'
-import { motion, AnimatePresence } from 'motion/react'
+import Todos from './components/Todos'
+import { type ToDo, type AppState, type Action, type TodoId } from '../types'
 
 const mockTodos = [
   {
@@ -29,39 +30,6 @@ const mockTodos = [
     completed: false
   }
 ]
-
-interface ToDo {
-  id: string
-  title: string
-  completed: boolean
-}
-
-const FilterTodos = {
-  COMPLETED: 'COMPLETED',
-  ACTIVE: 'ACTIVE',
-  NONE: 'NONE'
-} as const
-
-type filterTodosTS = keyof typeof FilterTodos
-
-interface AppState {
-  todos: ToDo[]
-  history: ToDo[][]
-}
-
-type Action =
-  | { type: 'ADD_TODO'; payload: { title: string } }
-  | { type: 'TOGGLE_COMPLETE'; payload: { id: string; completed: boolean } }
-  | { type: 'DELETE_COMPLETED' }
-  | { type: 'TOGGLE_ALL'; payload: { completed: boolean } }
-  | { type: 'UNDO' }
-  | { type: 'TOGGLE_MARKED_ALL'; payload: { completed: boolean } }
-  | { type: 'EDIT_TODO_TEXT'; payload: { id: string; title: string } }
-
-const initialState: AppState = {
-  todos: mockTodos,
-  history: [mockTodos]
-}
 
 const reducer = (state: AppState, action: Action): AppState => {
   switch (action.type) {
@@ -151,6 +119,19 @@ const reducer = (state: AppState, action: Action): AppState => {
   }
 }
 
+const FilterTodos = {
+  COMPLETED: 'COMPLETED',
+  ACTIVE: 'ACTIVE',
+  NONE: 'NONE'
+} as const
+
+type filterTodosTS = keyof typeof FilterTodos
+
+const initialState: AppState = {
+  todos: mockTodos,
+  history: [mockTodos]
+}
+
 const App = (): React.JSX.Element => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const [search, setSearch] = useState<string>('')
@@ -167,28 +148,20 @@ const App = (): React.JSX.Element => {
     dispatch({ type: 'ADD_TODO', payload: { title: newTodoValue } })
 
     //event.currentTarget.reset()
-    const inputElement = event.currentTarget.elements.namedItem('todo') as
-      | HTMLInputElement
-      | undefined
+    const inputElement = event.currentTarget.elements.namedItem('todo') as HTMLInputElement | undefined
     if (inputElement) {
       inputElement.value = ''
     }
   }
 
-  const handleCompletedTodo = ({
-    event,
-    todo
-  }: {
-    event: ChangeEvent<HTMLInputElement>
-    todo: ToDo
-  }) => {
+  const handleCompletedTodo = ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => {
     dispatch({
       type: 'TOGGLE_COMPLETE',
-      payload: { id: todo.id, completed: event.target.checked }
+      payload: { id, completed: event.target.checked }
     })
   }
 
-  const handleDeleteTodo = () => {
+  const handleDeleteCompleted = () => {
     dispatch({ type: 'DELETE_COMPLETED' })
   }
 
@@ -247,9 +220,9 @@ const App = (): React.JSX.Element => {
     }
   }, [isIndeterminate])
 
-  const handleEditTextTodo = (event: ChangeEvent<HTMLInputElement>, todo: ToDo) => {
+  const handleEditTextTodo = ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => {
     const value = event.currentTarget.value
-    dispatch({ type: 'EDIT_TODO_TEXT', payload: { title: value, id: todo.id } })
+    dispatch({ type: 'EDIT_TODO_TEXT', payload: { title: value, id } })
   }
 
   return (
@@ -294,49 +267,11 @@ const App = (): React.JSX.Element => {
             {isAllChecked ? ' Desmarcar todos' : ' Marcar todos'}
           </label>
         </div>
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl h-96 overflow-y-auto">
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {/* 1. AnimatePresence detecta cuándo se eliminan o filtran elementos */}
-            <AnimatePresence mode="popLayout">
-              {filteredTodos.map((todo) => (
-                // 2. Convertimos el li en motion.li y agregamos las propiedades de animación
-                <motion.li
-                  key={todo.id} // Obligatorio: debe ser el ID único de la tarea
-                  layout // Alerta a Framer Motion para animar reordenamientos y cambios de tamaño
-                  initial={{ opacity: 0, y: -15 }} // Cómo nace (invisible y un poco más arriba)
-                  animate={{ opacity: 1, y: 0 }} // Cómo se mantiene (visible y en su posición)
-                  exit={{ opacity: 0, scale: 0.9 }} // Cómo muere (se desvanece y se achica al filtrarse/borrarse)
-                  transition={{ type: 'spring', stiffness: 500, damping: 40 }} // Animación tipo resorte, muy fluida
-                  className="flex items-center p-4 group bg-white dark:bg-gray-800" // Asegura el fondo para evitar transparencias raras al salir
-                >
-                  <input
-                    checked={todo.completed}
-                    onChange={(event) => handleCompletedTodo({ event, todo })}
-                    type="checkbox"
-                    className="h-6 w-6 rounded-full text-indigo-600 border-gray-300 dark:border-gray-600 focus:ring-indigo-500 dark:bg-gray-700 dark:checked:bg-indigo-500 transition duration-150 ease-in-out cursor-pointer"
-                  />
-                  <span
-                    className={`ml-4 flex-1 text-lg ${todo.completed ? 'line-through text-gray-400 dark:text-gray-500' : 'text-gray-800 dark:text-gray-200'}`}
-                  >
-                    <input
-                      onChange={(event) => handleEditTextTodo(event, todo)}
-                      type="text"
-                      value={todo.title}
-                      style={{ minWidth: `${Math.max(todo.title.length)}ch` }}
-                    />
-                  </span>
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
-
-          {/* Si está vacío, el texto se inyecta directamente debajo en el mismo contenedor */}
-          {filteredTodos.length === 0 && (
-            <div className="flex h-full items-center justify-center p-4">
-              <p className="text-gray-500 dark:text-gray-400">No hay tareas por aquí.</p>
-            </div>
-          )}
-        </div>
+        <Todos
+          todos={filteredTodos}
+          handleCompletedTodo={handleCompletedTodo}
+          handleEditTextTodo={handleEditTextTodo}
+        />
 
         <footer className="flex items-center justify-between gap-4 p-4 bg-white dark:bg-gray-800 shadow-lg rounded-xl">
           <span className="text-sm text-gray-500 dark:text-gray-400">
@@ -387,7 +322,7 @@ const App = (): React.JSX.Element => {
 
           {completedTodosCount > 0 ? (
             <button
-              onClick={handleDeleteTodo}
+              onClick={handleDeleteCompleted}
               className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium"
             >
               Borrar completadas
