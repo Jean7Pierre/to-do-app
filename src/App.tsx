@@ -11,10 +11,11 @@ import {
 import './App.css'
 import useDebounce from './hooks/useDebounce'
 import Todos from './components/Todos'
-import type { ToDo, AppState, TodoId } from '../types'
+import type { AppState, TodoId } from '../types'
 import Footer from './components/Footer'
 import { Filter_Todos } from './const/FilterTodos'
 import { reducer } from './utility/reducerActionTodos'
+import { dictTodosAction } from './utility/dictTodosAction'
 
 const mockTodos = [
   {
@@ -92,12 +93,6 @@ const App = (): React.JSX.Element => {
     const searchValue = event.currentTarget.value
     if (searchValue === ' ') return
     setSearch(searchValue)
-  }
-
-  const dictTodosAction: Record<filterTodosTS, (todos: ToDo[]) => ToDo[]> = {
-    [Filter_Todos.NONE]: (todos) => todos,
-    [Filter_Todos.ACTIVE]: (todos) => todos.filter((todo) => todo.completed === false),
-    [Filter_Todos.COMPLETED]: (todos) => todos.filter((todo) => todo.completed === true)
   }
 
   const filteredTodos = useMemo(() => {
