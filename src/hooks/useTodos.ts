@@ -46,7 +46,7 @@ const useTodos = () => {
   const [filterTodo, setFilterTodo] = useState<filterTodosTS>(Filter_Todos.NONE)
   const masterCheckboxRef = useRef<HTMLInputElement>(null)
 
-  const handleAddTodos = (event: SubmitEvent<HTMLFormElement>) => {
+  const handleAddTodo = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const newTodoValue = formData.get('todo') as string | undefined
@@ -128,7 +128,7 @@ const useTodos = () => {
 
   return {
     setFilterTodo,
-    handleAddTodos,
+    handleAddTodo,
     handleCompletedTodo,
     handleDeleteCompleted,
     handleSearchTodos,

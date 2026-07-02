@@ -1,3 +1,4 @@
+import AddNewTodo from './components/AddNewTodo'
 import Footer from './components/Footer'
 import Todos from './components/Todos'
 import { Filter_Todos } from './const/FilterTodos'
@@ -6,7 +7,7 @@ import useTodos from './hooks/useTodos'
 const App = (): React.JSX.Element => {
   const {
     setFilterTodo,
-    handleAddTodos,
+    handleAddTodo,
     handleCompletedTodo,
     handleDeleteCompleted,
     handleSearchTodos,
@@ -30,17 +31,7 @@ const App = (): React.JSX.Element => {
       </header>
       <main className="w-full max-w-xl space-y-6">
         <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl p-4">
-          <form onSubmit={handleAddTodos}>
-            <input
-              type="text"
-              placeholder="¿Qué quieres hacer hoy?"
-              id="todo"
-              name="todo"
-              required
-              autoFocus
-              className="w-full px-4 py-3 bg-transparent border-none rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            />
-          </form>
+          <AddNewTodo handleAddTodo={handleAddTodo} />
           <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
             <input
               onChange={handleSearchTodos}
