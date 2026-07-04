@@ -19,7 +19,7 @@ interface Props {
   handleCompletedTodo: ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => void
   handleFinishEdit: (id: TodoId, title: string) => void
   handleDeleteTodo: ({ id }: { id: TodoId }) => void
-  handleContextMenu: ({ event, id }: { event: MouseEvent; id: TodoId }) => void
+  handleContextMenu: ({ event, id }: { event: MouseEvent<HTMLElement>; id: TodoId }) => void
 }
 
 const Todo: FC<Props> = ({

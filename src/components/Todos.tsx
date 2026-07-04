@@ -23,8 +23,8 @@ const Todos: FC<Props> = ({ todos, handleDeleteTodo, handleCompletedTodo, handle
   // Estado para controlar qué TODO se está editando
   const [editingId, setEditingId] = useState<TodoId | null>(null)
 
-  const handleContextMenu = ({ event, id }: { event: MouseEvent; id: TodoId }) => {
-    event.preventDefault() // Evita el menú nativo del navegador
+  const handleContextMenu = ({ event, id }: { event: React.MouseEvent; id: TodoId }) => {
+    event.preventDefault()
 
     // Guardamos la posición exacta del cursor en píxeles
     setMenuConfig({
