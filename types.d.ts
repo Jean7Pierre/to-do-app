@@ -23,3 +23,4 @@ export type Action =
   | { type: 'UNDO' }
   | { type: 'TOGGLE_MARKED_ALL'; payload: { completed: boolean } }
   | { type: 'EDIT_TODO_TEXT'; payload: { id: string; title: string } }
+  | { type: 'DELETE_TODO'; payload: { id: string } }

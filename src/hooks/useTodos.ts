@@ -126,6 +126,10 @@ const useTodos = () => {
     dispatch({ type: 'EDIT_TODO_TEXT', payload: { title: value, id } })
   }
 
+  const handleDeleteTodo = ({ id }: { id: TodoId }) => {
+    dispatch({ type: 'DELETE_TODO', payload: { id } })
+  }
+
   return {
     setFilterTodo,
     handleAddTodo,
@@ -140,7 +144,8 @@ const useTodos = () => {
     masterCheckboxRef,
     isAllChecked,
     pendingTodosCount,
-    filterTodo
+    filterTodo,
+    handleDeleteTodo
   }
 }
 

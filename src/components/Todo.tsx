@@ -8,9 +8,17 @@ interface Props {
   title: TodoTitle
   handleCompletedTodo: ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => void
   handleEditTextTodo: ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => void
+  handleDeleteTodo: ({ id }: { id: TodoId }) => void
 }
 
-const Todo: FC<Props> = ({ id, completed, title, handleCompletedTodo, handleEditTextTodo }) => {
+const Todo: FC<Props> = ({
+  id,
+  completed,
+  title,
+  handleCompletedTodo,
+  handleEditTextTodo,
+  handleDeleteTodo
+}) => {
   return (
     // 2. Convertimos el li en motion.li y agregamos las propiedades de animación
     <motion.li
@@ -38,6 +46,7 @@ const Todo: FC<Props> = ({ id, completed, title, handleCompletedTodo, handleEdit
           style={{ minWidth: `${Math.max(title.length)}ch` }}
         />
       </span>
+      <span onClick={() => handleDeleteTodo({ id })}>X</span>
     </motion.li>
   )
 }

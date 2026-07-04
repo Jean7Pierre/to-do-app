@@ -83,6 +83,14 @@ export const reducer = (state: AppState, action: Action): AppState => {
         todos: editTodos
       }
     }
+    case 'DELETE_TODO': {
+      const newTodos = state.todos.filter((todo) => todo.id !== action.payload.id)
+      return {
+        ...state,
+        history: [...state.history, newTodos],
+        todos: newTodos
+      }
+    }
     default:
       return state
   }

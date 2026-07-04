@@ -7,9 +7,10 @@ interface Props {
   todos: ListOfTodos
   handleCompletedTodo: ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => void
   handleEditTextTodo: ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => void
+  handleDeleteTodo: ({ id }: { id: TodoId }) => void
 }
 
-const Todos: FC<Props> = ({ todos, handleCompletedTodo, handleEditTextTodo }) => {
+const Todos: FC<Props> = ({ todos, handleDeleteTodo, handleCompletedTodo, handleEditTextTodo }) => {
   return (
     <div className="bg-white dark:bg-gray-800 shadow-lg rounded-xl h-96 overflow-y-auto">
       <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -22,6 +23,7 @@ const Todos: FC<Props> = ({ todos, handleCompletedTodo, handleEditTextTodo }) =>
               completed={todo.completed}
               handleEditTextTodo={handleEditTextTodo}
               handleCompletedTodo={handleCompletedTodo}
+              handleDeleteTodo={handleDeleteTodo}
             />
           ))}
         </AnimatePresence>

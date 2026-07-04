@@ -1,0 +1,9 @@
+### crear un todo
+POST https://api.jsonbin.io/v3/b
+Content-Type: application/json
+X-Master-Key:$2a$10$7B2JN35sINaZbtZfJBC8beHSUv1YCgU78fj00vD7mY3G90T8xmoXO
+
+{
+  "title":"Ir de compras",
+  "completed":false
+}

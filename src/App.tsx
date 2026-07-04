@@ -20,7 +20,8 @@ const App = (): React.JSX.Element => {
     masterCheckboxRef,
     isAllChecked,
     pendingTodosCount,
-    filterTodo
+    filterTodo,
+    handleDeleteTodo
   } = useTodos()
 
   return (
@@ -50,6 +51,7 @@ const App = (): React.JSX.Element => {
           todos={filteredTodos}
           handleCompletedTodo={handleCompletedTodo}
           handleEditTextTodo={handleEditTextTodo}
+          handleDeleteTodo={handleDeleteTodo}
         />
 
         <Footer
