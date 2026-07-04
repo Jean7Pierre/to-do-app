@@ -121,9 +121,8 @@ const useTodos = () => {
     }
   }, [isIndeterminate])
 
-  const handleEditTextTodo = ({ event, id }: { event: ChangeEvent<HTMLInputElement>; id: TodoId }) => {
-    const value = event.currentTarget.value
-    dispatch({ type: 'EDIT_TODO_TEXT', payload: { title: value, id } })
+  const handleEditTextTodo = ({ id, title }: { id: TodoId; title: string }) => {
+    dispatch({ type: 'EDIT_TODO_TEXT', payload: { title, id } })
   }
 
   const handleDeleteTodo = ({ id }: { id: TodoId }) => {

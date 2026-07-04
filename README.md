@@ -14,7 +14,7 @@
 - [x] Añadir forma de borrar todos los TODOs completados
 - [x] Crear Header con input (Header)
 - [x] Crear un TODO (Header)
-- [ ] Poder editar el texto de un TODO (Doble click)
-- [ ] Añadir animaciones con AutoAnimate
+- [x] Poder editar el texto de un TODO (click derecho)
+- [x] Añadir animaciones
 - [x] Pasar a Reducer
 - [ ] Sincronizar con el backend, dejar de usar un mock
