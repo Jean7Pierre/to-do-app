@@ -6,8 +6,10 @@
 [![Estado del deploy](https://img.shields.io/badge/deploy-en%20proceso-yellow.svg)](https://)
 [![Licencia: MIT](https://img.shields.io/badge/Licencia-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-![Captura de pantalla de la aplicación To-do](https://via.placeholder.com/800x450.png?text=Próximamente+captura+de+pantalla+o+GIF)
-_(Reemplazar con una captura de pantalla o GIF del proyecto)_
+<p align="center">
+  <a href="https://youtu.be/QCbUMj6D0pA?si=wU0v09yft-27rVUy">Video de demostración.
+  </a>
+</p>
 
 ## ✨ ¿Por qué este proyecto es interesante?
 
