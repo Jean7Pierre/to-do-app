@@ -1,4 +1,4 @@
-import type { ToDo } from '../../types'
+import type { ToDo } from '../../types.d'
 import { Filter_Todos } from '../const/FilterTodos'
 
 type filterTodosTS = (typeof Filter_Todos)[keyof typeof Filter_Todos]

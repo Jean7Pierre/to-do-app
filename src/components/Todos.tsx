@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useState, type ChangeEvent, type FC } from 'react'
-import { type ListOfTodos, type TodoId } from '../../types'
+import { type ListOfTodos, type TodoId } from '../../types.d'
 import { AnimatePresence } from 'motion/react'
 import Todo from './Todo'
 

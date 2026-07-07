@@ -9,7 +9,7 @@ import {
   type MouseEvent
 } from 'react'
 import { motion } from 'motion/react'
-import type { TodoCompleted, TodoId, TodoTitle } from '../../types'
+import type { TodoCompleted, TodoId, TodoTitle } from '../../types.d'
 
 interface Props {
   id: TodoId

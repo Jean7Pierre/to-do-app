@@ -9,7 +9,7 @@ import {
   useRef
 } from 'react'
 import useDebounce from '../hooks/useDebounce'
-import type { AppState, TodoId } from '../../types'
+import type { AppState, TodoId } from '../../types.d'
 import { Filter_Todos } from '../const/FilterTodos'
 import { reducer } from '../utility/reducerActionTodos'
 import { dictTodosAction } from '../utility/dictTodosAction'
